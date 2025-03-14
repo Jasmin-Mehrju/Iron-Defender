@@ -16,40 +16,47 @@ class Settings():
 
 
 class Iron_Man(pygame.sprite.Sprite):
-    def __init__(self, image_file, size, pos):
+    def __init__(self, image_file, size, pos, screen):
         super().__init__()
         self.image = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Iron Man", image_file)).convert_alpha()
         self.image = pygame.transform.scale(self.image, size)
         self.rect = self.image.get_rect()
         self.pos = pygame.math.Vector2(pos)
-        self.direction = None
-        self.speed = 500
+        self.direction = pygame.math.Vector2(0, 0)
+        self.speed = 250
+        self.screen = screen
 
     def move(self):
-        if self.direction == "left":
-            self.pos.x -= self.speed * Settings.DELTATIME
-        elif self.direction == "right":
-            self.pos.x += self.speed * Settings.DELTATIME
-        elif self.direction == "up":
-            self.pos.y -= self.speed * Settings.DELTATIME
-        elif self.direction == "down":
-            self.pos.y += self.speed * Settings.DELTATIME
+        self.pos.x += self.direction.x * self.speed * Settings.DELTATIME
+        self.pos.y += self.direction.y * self.speed * Settings.DELTATIME
 
-        if self.rect.left < 0:
-            self.rect.left = 0
-        elif self.rect.right > Settings.WINDOW.width:
-                self.rect.right = Settings.WINDOW.width
+    # Begrenzungen des Fensters
+        # self.pos.x = max(0, min(Settings.WINDOW.width - self.rect.width, self.pos.x))
+        # self.pos.y = max(0, min(Settings.WINDOW.height - self.rect.height, self.pos.y))
 
-        if self.rect.top < 0:
-            self.rect.top = 0
-        elif self.rect.bottom > Settings.WINDOW.height:
-            self.rect.bottom = Settings.WINDOW.height
+        # if self.direction == "left":
+        #     self.pos.x -= self.speed * Settings.DELTATIME
+        # elif self.direction == "right":
+        #     self.pos.x += self.speed * Settings.DELTATIME
+        # elif self.direction == "up":
+        #     self.pos.y -= self.speed * Settings.DELTATIME
+        # elif self.direction == "down":
+        #     self.pos.y += self.speed * Settings.DELTATIME
+
+        if self.pos.x < 0:
+            self.pos.x = 0
+        elif self.pos.x + self.rect.width > self.screen.get_width():
+            self.pos.x = self.screen.get_width() - self.rect.width
+
+        if self.pos.y < 0:
+            self.pos.y = 0
+        elif self.pos.y + self.rect.height > self.screen.get_height():
+            self.pos.y = self.screen.get_height() - self.rect.height
             
-        self.direction = None
+        self.rect.topleft = self.pos
 
     def update(self):
         self.move()
-        self.rect.topleft = self.pos
 
 
 class Game():
@@ -60,7 +67,7 @@ class Game():
         pygame.display.set_caption("Iron Defender")
         self.clock = pygame.time.Clock()
 
-        self.iron_man = pygame.sprite.GroupSingle(Iron_Man("normal.png",(150, 240),(Settings.start_pos)))
+        self.iron_man = pygame.sprite.GroupSingle(Iron_Man("normal.png",(150, 240),(Settings.start_pos), self.screen))
 
         self.background_image = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "background.png")).convert()
         self.background_image = pygame.transform.scale(self.background_image, self.screen.get_size())
@@ -89,7 +96,22 @@ class Game():
                     self.running = False
 
                 elif event.key == pygame.K_LEFT:
-                    self.iron_man.sprite.direction = "left"
+                    self.iron_man.sprite.direction = pygame.math.Vector2(-1, 0)
+                
+                elif event.key == pygame.K_RIGHT:
+                    self.iron_man.sprite.direction = pygame.math.Vector2(1, 0)
+
+                elif event.key == pygame.K_UP:
+                    self.iron_man.sprite.direction = pygame.math.Vector2(0, -1)
+
+                elif event.key == pygame.K_DOWN:
+                    self.iron_man.sprite.direction = pygame.math.Vector2(0, 1)
+
+            elif event.type == pygame.KEYUP:
+                if event.key in (pygame.K_LEFT, pygame.K_RIGHT):
+                    self.iron_man.sprite.direction.x = 0
+                if event.key in (pygame.K_UP, pygame.K_DOWN):
+                    self.iron_man.sprite.direction.y = 0
 
 
     def update(self):
