@@ -9,6 +9,8 @@ class Settings():
                   "left": pygame.math.Vector2(-5, 0), 
                   "up": pygame.math.Vector2(0, -5), 
                   "down": pygame.math.Vector2(0, 5)}
+    image_sprite = [pygame.image.load("normal.png"),
+                    pygame.image.load("shoot.png")]
     TITLE = "Iron Defender"
     FILE_PATH = os.path.dirname(os.path.abspath(__file__))
     IMAGE_PATH = os.path.join(FILE_PATH, "images")
@@ -25,6 +27,7 @@ class Iron_Man(pygame.sprite.Sprite):
         self.direction = pygame.math.Vector2(0, 0)
         self.speed = 250
         self.screen = screen
+        self.is_shooting = False
 
     def move(self):
         self.pos.x += self.direction.x * self.speed * Settings.DELTATIME
@@ -56,6 +59,11 @@ class Iron_Man(pygame.sprite.Sprite):
         self.rect.topleft = self.pos
 
     def update(self):
+        if self.is_shooting:
+            self.image = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Iron Man", "shoot.png")).convert_alpha()
+        else:
+            self.image = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Iron Man", "normal.png")).convert_alpha()
+        self.image = pygame.transform.scale(self.image, (150, 240))
         self.move()
 
 
@@ -112,6 +120,8 @@ class Game():
                     self.iron_man.sprite.direction.x = 0
                 if event.key in (pygame.K_UP, pygame.K_DOWN):
                     self.iron_man.sprite.direction.y = 0
+            if event.key == pygame.K_SPACE:
+                
 
 
     def update(self):
