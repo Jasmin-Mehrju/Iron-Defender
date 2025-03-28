@@ -14,19 +14,19 @@ class Settings():
     IMAGE_PATH = os.path.join(FILE_PATH, "images")
     start_pos = pygame.math.Vector2(0, WINDOW.height // 2)
 
-    normal_image = pygame.image.load(os.path.join(IMAGE_PATH, "Iron Man", "normal.png")).convert_alpha()
-    shoot_image = pygame.image.load(os.path.join(IMAGE_PATH, "Iron Man", "shoot.png")).convert_alpha()
-    normal_image = pygame.transform.scale(normal_image, (150, 240))
-    shoot_image = pygame.transform.scale(shoot_image, (150, 240))
-
-    image_sprite = [normal_image, shoot_image]
-
 
 class Iron_Man(pygame.sprite.Sprite):
-    def __init__(self, image_file, size, pos, screen):
+    def __init__(self, size, pos, screen):
         super().__init__()
-        self.image = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Iron Man", image_file)).convert_alpha()
-        self.image = pygame.transform.scale(self.image, size)
+        
+        self.normal_image = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Iron Man", "normal.png")).convert_alpha()
+        self.shoot_image = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Iron Man", "shoot.png")).convert_alpha()
+        self.normal_image = pygame.transform.scale(self.normal_image, (size))
+        self.shoot_image = pygame.transform.scale(self.shoot_image, (size))
+
+        #image_sprite = [normal_image, shoot_image]
+
+        self.image = self.normal_image
         self.rect = self.image.get_rect()
         self.pos = pygame.math.Vector2(pos)
         self.direction = pygame.math.Vector2(0, 0)
@@ -64,12 +64,13 @@ class Iron_Man(pygame.sprite.Sprite):
         self.rect.topleft = self.pos
 
     def update(self):
-        if self.is_shooting:
-            self.image = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Iron Man", "shoot.png")).convert_alpha()
-            self.image = pygame.transform.scale(self.image, (150, 240))
-        else:
-            self.image = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Iron Man", "normal.png")).convert_alpha()
-        self.image = pygame.transform.scale(self.image, (150, 240))
+        self.image = self.shoot_image if self.is_shooting else self.normal_image
+        # if self.is_shooting:
+        #     self.image = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Iron Man", "shoot.png")).convert_alpha()
+        #     self.image = pygame.transform.scale(self.image, (150, 240))
+        # else:
+        #     self.image = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Iron Man", "normal.png")).convert_alpha()
+        # self.image = pygame.transform.scale(self.image, (150, 240))
         self.move()
 
 
@@ -81,23 +82,30 @@ class Game():
         pygame.display.set_caption("Iron Defender")
         self.clock = pygame.time.Clock()
 
-        self.iron_man = pygame.sprite.GroupSingle(Iron_Man("normal.png",(150, 240),(Settings.start_pos), self.screen))
+        self.iron_man = pygame.sprite.GroupSingle(Iron_Man((150, 240),(Settings.start_pos), self.screen))
 
         self.background_image = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "background.png")).convert()
         self.background_image = pygame.transform.scale(self.background_image, self.screen.get_size())
 
+        self.title_screen = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Hintergrund", "splash_screen.jpg")).convert
+        self.title_screen = pygame.transform.scale(self.title_screen, self.screen.get_size())
+
         self.running = True
+        self.show_title = True
 
     def run(self):
         while self.running:
-            self.watch_for_events()
-            self.update()
-            self.draw()
+            if self.show_title:
+                self.show_title_screen()
+            else:
+                self.watch_for_events()
+                self.update()
+                self.draw()
             self.clock.tick(Settings.FPS)
         pygame.quit()
 
     def draw(self):
-        self.screen.blit(self.background_image)
+        self.screen.blit(self.background_image, (0,0))
         self.iron_man.draw(self.screen)
         pygame.display.flip()
 
@@ -130,8 +138,22 @@ class Game():
                     self.iron_man.sprite.direction.y = 0
                 elif event.key == pygame.K_SPACE:
                     self.iron_man.sprite.is_shooting = False
-                
 
+    def show_title_screen(self):
+        self.screen.blit(self.title_screen, (0,0))
+        font = pygame.font.Font(None, 80)
+        text = font.render("Press SPACE to start", True, (255, 255, 255))
+        text_rect = text.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() - 100))
+        self.screen.blit(text, text_rect)
+        pygame.display.flip()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                self.show_title = False
+    
+    
 
     def update(self):
         self.iron_man.update()
