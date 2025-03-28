@@ -9,12 +9,17 @@ class Settings():
                   "left": pygame.math.Vector2(-5, 0), 
                   "up": pygame.math.Vector2(0, -5), 
                   "down": pygame.math.Vector2(0, 5)}
-    image_sprite = [pygame.image.load("normal.png"),
-                    pygame.image.load("shoot.png")]
     TITLE = "Iron Defender"
     FILE_PATH = os.path.dirname(os.path.abspath(__file__))
     IMAGE_PATH = os.path.join(FILE_PATH, "images")
     start_pos = pygame.math.Vector2(0, WINDOW.height // 2)
+
+    normal_image = pygame.image.load(os.path.join(IMAGE_PATH, "Iron Man", "normal.png")).convert_alpha()
+    shoot_image = pygame.image.load(os.path.join(IMAGE_PATH, "Iron Man", "shoot.png")).convert_alpha()
+    normal_image = pygame.transform.scale(normal_image, (150, 240))
+    shoot_image = pygame.transform.scale(shoot_image, (150, 240))
+
+    image_sprite = [normal_image, shoot_image]
 
 
 class Iron_Man(pygame.sprite.Sprite):
@@ -61,6 +66,7 @@ class Iron_Man(pygame.sprite.Sprite):
     def update(self):
         if self.is_shooting:
             self.image = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Iron Man", "shoot.png")).convert_alpha()
+            self.image = pygame.transform.scale(self.image, (150, 240))
         else:
             self.image = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Iron Man", "normal.png")).convert_alpha()
         self.image = pygame.transform.scale(self.image, (150, 240))
@@ -114,19 +120,21 @@ class Game():
 
                 elif event.key == pygame.K_DOWN:
                     self.iron_man.sprite.direction = pygame.math.Vector2(0, 1)
+                elif event.key == pygame.K_SPACE:
+                    self.iron_man.sprite.is_shooting = True
 
             elif event.type == pygame.KEYUP:
                 if event.key in (pygame.K_LEFT, pygame.K_RIGHT):
                     self.iron_man.sprite.direction.x = 0
                 if event.key in (pygame.K_UP, pygame.K_DOWN):
                     self.iron_man.sprite.direction.y = 0
-            if event.key == pygame.K_SPACE:
+                elif event.key == pygame.K_SPACE:
+                    self.iron_man.sprite.is_shooting = False
                 
 
 
     def update(self):
         self.iron_man.update()
-
 
 
 def main():
