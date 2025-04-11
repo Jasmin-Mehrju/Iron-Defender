@@ -23,8 +23,6 @@ class Iron_Man(pygame.sprite.Sprite):
         self.shoot_image_unscaled = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Iron Man", "shoot.png")).convert_alpha()
         self.normal_image = pygame.transform.scale(self.normal_image_unscaled, (size))
 
-        #image_sprite = [normal_image, shoot_image]
-
         self.image = self.normal_image
         self.rect = self.image.get_rect()
         self.pos = pygame.math.Vector2(pos)
@@ -97,6 +95,10 @@ class Game():
 
         self.running = True
         self.show_title = True
+        self.lives = 3
+        self.heart_image = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Iron Man", "leben.png")).convert_alpha()
+        self.heart_image = pygame.transform.scale(self.heart_image, (50, 50))
+        self.font = pygame.font.Font(None, 36)
 
     def run(self):
         while self.running:
@@ -112,6 +114,18 @@ class Game():
     def draw(self):
         self.screen.blit(self.background_image, (0,0))
         self.iron_man.draw(self.screen)
+        bar_height = 70
+        screen_width = self.screen.get_width()
+        transparent_bar = pygame.Surface((screen_width, bar_height), pygame.SRCALPHA)
+        pygame.draw.rect(transparent_bar, (102, 102, 102, 102), transparent_bar.get_rect())
+        self.screen.blit(transparent_bar, (0, 0))
+        icon_spacing = 10
+        start_x = self.screen.get_width() - 10
+        heart_rect = self.heart_image.get_rect(topright=(start_x, 10))
+        current_x = heart_rect.left
+        for i in range(self.lives):
+            self.screen.blit(self.heart_image, (current_x, heart_rect.top))
+            current_x -= (heart_rect.width + icon_spacing)
         pygame.display.flip()
 
     def watch_for_events(self):
@@ -143,24 +157,6 @@ class Game():
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_SPACE:
                     self.iron_man.sprite.is_shooting = False
-
-                # elif event.key == pygame.K_LEFT:
-                #     self.iron_man.sprite.direction = pygame.math.Vector2(-1, 0)
-                
-                # elif event.key == pygame.K_RIGHT:
-                #     self.iron_man.sprite.direction = pygame.math.Vector2(1, 0)
-
-                # elif event.key == pygame.K_UP:
-                #     self.iron_man.sprite.direction = pygame.math.Vector2(0, -1)
-
-                # elif event.key == pygame.K_DOWN:
-                #     self.iron_man.sprite.direction = pygame.math.Vector2(0, 1)
-
-
-                # if event.key in (pygame.K_LEFT, pygame.K_RIGHT):
-                #     self.iron_man.sprite.direction.x = 0
-                # if event.key in (pygame.K_UP, pygame.K_DOWN):
-                #     self.iron_man.sprite.direction.y = 0
 
     def show_title_screen(self):
         self.screen.blit(self.title_screen, (0,0))
