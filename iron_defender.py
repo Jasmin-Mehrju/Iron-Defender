@@ -76,6 +76,30 @@ class Iron_Man(pygame.sprite.Sprite):
         # self.image = pygame.transform.scale(self.image, (150, 240))
         self.move()
 
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self, size, pos):
+        super().__init__()
+
+        self.normal_image_unscaled = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Enemy", "enemy2.png")).convert_alpha()
+        #self.shoot_image_unscaled = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Enemy", "enemy2.png")).convert_alpha()
+        self.normal_image = pygame.transform.scale(self.normal_image_unscaled, (size))
+
+        self.image = self.normal_image
+        self.rect = self.image.get_rect()
+        self.pos = pygame.math.Vector2(pos)
+
+    def move(self):
+        if self.pos.x < 0:
+            self.pos.x = 0
+        elif self.pos.x + self.rect.width > self.screen.get_width():
+            self.pos.x = self.screen.get_width() - self.rect.width
+
+        if self.pos.y < 0:
+            self.pos.y = 0
+        elif self.pos.y + self.rect.height > self.screen.get_height():
+            self.pos.y = self.screen.get_height() - self.rect.height
+            
+        self.rect.topleft = self.pos
 
 class Game():
     def __init__(self):
@@ -86,6 +110,7 @@ class Game():
         self.clock = pygame.time.Clock()
 
         self.iron_man = pygame.sprite.GroupSingle(Iron_Man((150, 240),(Settings.start_pos), self.screen))
+        self.enemies = pygame.sprite.Group()
 
         self.background_image = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "background.png")).convert()
         self.background_image = pygame.transform.scale(self.background_image, self.screen.get_size())
@@ -99,6 +124,12 @@ class Game():
         self.heart_image = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Iron Man", "leben.png")).convert_alpha()
         self.heart_image = pygame.transform.scale(self.heart_image, (50, 50))
         self.font = pygame.font.Font(None, 36)
+
+    def handle_hit(self):
+        if self.lives > 0:
+            self.lives -= 1
+            if self.lives == 0:
+                self.show_title_screen()
 
     def run(self):
         while self.running:
@@ -114,7 +145,8 @@ class Game():
     def draw(self):
         self.screen.blit(self.background_image, (0,0))
         self.iron_man.draw(self.screen)
-        bar_height = 70
+        self.enemies.draw(self.screen)
+        bar_height = 65
         screen_width = self.screen.get_width()
         transparent_bar = pygame.Surface((screen_width, bar_height), pygame.SRCALPHA)
         pygame.draw.rect(transparent_bar, (102, 102, 102, 102), transparent_bar.get_rect())
