@@ -1,5 +1,6 @@
 import os
 import pygame
+from pygame import mixer
 
 class Settings():
     WINDOW = pygame.rect.Rect((0, 0, 1400, 800))
@@ -30,6 +31,12 @@ class Iron_Man(pygame.sprite.Sprite):
         self.speed = 250
         self.screen = screen
         self.is_shooting = False
+        self.last_shot = pygame.time.get_ticks()
+
+    def get_hand_position(self):
+        hand_x = self.rect.right - 10
+        hand_y = self.rect.top + 55
+        return hand_x, hand_y
 
     def move(self):
         self.pos.x += self.direction.x * self.speed * Settings.DELTATIME
@@ -61,6 +68,7 @@ class Iron_Man(pygame.sprite.Sprite):
         self.rect.topleft = self.pos
 
     def update(self):
+        self.cooldown = 500
         if self.is_shooting:
             self.image = self.shoot_image_unscaled
             self.rect = self.image.get_rect(topleft=self.pos)
@@ -101,6 +109,20 @@ class Enemy(pygame.sprite.Sprite):
             
         self.rect.topleft = self.pos
 
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, pos):
+        super().__init__()
+        self.image = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Iron Man", "bullet.png")).convert_alpha()
+        self.image = pygame.transform.scale(self.image, (60, 40))
+        self.rect = self.image.get_rect(center=pos)
+
+
+    def update(self):
+        self.rect.x += 5
+        if self.rect.left > Settings.WINDOW.width:
+            self.kill()
+  
+
 class Game():
     def __init__(self):
         os.environ["SDL_VIDEO_WINDOW_POS"] = "10, 50"
@@ -111,12 +133,16 @@ class Game():
 
         self.iron_man = pygame.sprite.GroupSingle(Iron_Man((150, 240),(Settings.start_pos), self.screen))
         self.enemies = pygame.sprite.Group()
+        self.bullets = pygame.sprite.Group()
 
         self.background_image = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "background.png")).convert()
         self.background_image = pygame.transform.scale(self.background_image, self.screen.get_size())
 
         self.title_screen = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Hintergrund", "splash_screen.jpg")).convert()
         self.title_screen = pygame.transform.scale(self.title_screen, self.screen.get_size())
+
+        mixer.music.load("jarvis.mp3")
+        mixer.music.play()
 
         self.running = True
         self.show_title = True
@@ -146,6 +172,7 @@ class Game():
         self.screen.blit(self.background_image, (0,0))
         self.iron_man.draw(self.screen)
         self.enemies.draw(self.screen)
+        self.bullets.draw(self.screen)
         bar_height = 65
         screen_width = self.screen.get_width()
         transparent_bar = pygame.Surface((screen_width, bar_height), pygame.SRCALPHA)
@@ -179,13 +206,20 @@ class Game():
             self.iron_man.sprite.direction = direction
 
         for event in pygame.event.get():
+            time_now = pygame.time.get_ticks()
             if event.type == pygame.QUIT:
                 self.running = False
             elif event.type == pygame.KEYDOWN:          
                 if event.key == pygame.K_ESCAPE:  
                     self.running = False
-                elif event.key == pygame.K_SPACE:
+
+                elif event.key == pygame.K_SPACE and time_now - self.iron_man.sprite.last_shot > self.iron_man.sprite.cooldown:
+                    hand_pos = self.iron_man.sprite.get_hand_position()
                     self.iron_man.sprite.is_shooting = True
+                    bullet = Bullet(hand_pos)
+                    self.bullets.add(bullet)
+                    self.iron_man.sprite.last_shot = time_now
+
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_SPACE:
                     self.iron_man.sprite.is_shooting = False
@@ -208,6 +242,7 @@ class Game():
 
     def update(self):
         self.iron_man.update()
+        self.bullets.update()
 
 
 def main():
