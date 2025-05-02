@@ -33,10 +33,10 @@ class Iron_Man(pygame.sprite.Sprite):
         self.is_shooting = False
         self.last_shot = pygame.time.get_ticks()
 
-    # def get_hand_position(self):
-    #     hand_x = self.rect.right - 10
-    #     hand_y = self.rect.top + 55
-    #     return hand_x, hand_y
+    def get_hand_position(self):
+        hand_x = self.rect.right - 5
+        hand_y = self.rect.top + 55
+        return hand_x, hand_y
 
     def move(self):
         self.pos.x += self.direction.x * self.speed * Settings.DELTATIME
@@ -62,9 +62,9 @@ class Iron_Man(pygame.sprite.Sprite):
         else:
             self.image = self.normal_image
             self.rect = self.image.get_rect(topleft=self.pos)
-        self.move()
+        #self.move()
 
-class Enemies(pygame.sprite.Sprite):
+class Enemy(pygame.sprite.Sprite):
     def __init__(self, image, size, pos):
         super().__init__()
 
@@ -94,10 +94,10 @@ class Bullet(pygame.sprite.Sprite):
         super().__init__()
         self.image = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Iron Man", "bullet.png")).convert_alpha()
         self.image = pygame.transform.scale(self.image, (60, 40))
-        self.rect = self.image.get_rect(center=pos)
+        self.rect = self.image.get_rect(midleft=pos)
 
     def update(self):
-        self.rect.x += 5
+        self.rect.x += 8
         if self.rect.left > Settings.WINDOW.width:
             self.kill()
   
@@ -184,6 +184,8 @@ class Game():
         else:
             self.iron_man.sprite.direction = direction
 
+        self.iron_man.sprite.move()
+
         for event in pygame.event.get():
             time_now = pygame.time.get_ticks()
             if event.type == pygame.QUIT:
@@ -191,11 +193,12 @@ class Game():
             elif event.type == pygame.KEYDOWN:          
                 if event.key == pygame.K_ESCAPE:  
                     self.running = False
-                elif event.key == pygame.K_SPACE:
+                elif event.key == pygame.K_SPACE and time_now - self.iron_man.sprite.last_shot > self.iron_man.sprite.cooldown:
                     self.iron_man.sprite.is_shooting = True
-                    #bullet = Bullet(hand_pos)
-                    #self.bullets.add(bullet)
-                    #self.iron_man.sprite.last_shot = time_now
+                    hand_pos = self.iron_man.sprite.get_hand_position()
+                    bullet = Bullet(hand_pos)
+                    self.bullets.add(bullet)
+                    self.iron_man.sprite.last_shot = time_now
 
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_SPACE:
@@ -203,10 +206,25 @@ class Game():
 
     def show_title_screen(self):
         self.screen.blit(self.title_screen, (0,0))
-        font = pygame.font.Font(None, 80)
+        font = pygame.font.SysFont("Comic Sans MS", 60, bold=True)
         text = font.render("Press SPACE to start", True, (255, 255, 255))
         text_rect = text.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() - 100))
+        font2 = pygame.font.Font(None, 50)
+        text2 = font2.render(
+            "Controls:\n"
+            "w: up\n"
+            "a: left\n"
+            "s: down\n" 
+            "d: right\n",
+            True,
+            "white",
+            None
+        )
+
+        #text_rect = text.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() - 50))
+
         self.screen.blit(text, text_rect)
+        self.screen.blit(text2)
         pygame.display.flip()
 
         for event in pygame.event.get():
