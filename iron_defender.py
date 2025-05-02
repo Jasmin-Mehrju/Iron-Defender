@@ -33,27 +33,14 @@ class Iron_Man(pygame.sprite.Sprite):
         self.is_shooting = False
         self.last_shot = pygame.time.get_ticks()
 
-    def get_hand_position(self):
-        hand_x = self.rect.right - 10
-        hand_y = self.rect.top + 55
-        return hand_x, hand_y
+    # def get_hand_position(self):
+    #     hand_x = self.rect.right - 10
+    #     hand_y = self.rect.top + 55
+    #     return hand_x, hand_y
 
     def move(self):
         self.pos.x += self.direction.x * self.speed * Settings.DELTATIME
         self.pos.y += self.direction.y * self.speed * Settings.DELTATIME
-
-    # Begrenzungen des Fensters
-        # self.pos.x = max(0, min(Settings.WINDOW.width - self.rect.width, self.pos.x))
-        # self.pos.y = max(0, min(Settings.WINDOW.height - self.rect.height, self.pos.y))
-
-        # if self.direction == "left":
-        #     self.pos.x -= self.speed * Settings.DELTATIME
-        # elif self.direction == "right":
-        #     self.pos.x += self.speed * Settings.DELTATIME
-        # elif self.direction == "up":
-        #     self.pos.y -= self.speed * Settings.DELTATIME
-        # elif self.direction == "down":
-        #     self.pos.y += self.speed * Settings.DELTATIME
 
         if self.pos.x < 0:
             self.pos.x = 0
@@ -75,20 +62,13 @@ class Iron_Man(pygame.sprite.Sprite):
         else:
             self.image = self.normal_image
             self.rect = self.image.get_rect(topleft=self.pos)
-        #self.image = self.shoot_image if self.is_shooting else self.normal_image
-        # if self.is_shooting:
-        #     self.image = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Iron Man", "shoot.png")).convert_alpha()
-        #     self.image = pygame.transform.scale(self.image, (150, 240))
-        # else:
-        #     self.image = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Iron Man", "normal.png")).convert_alpha()
-        # self.image = pygame.transform.scale(self.image, (150, 240))
         self.move()
 
-class Enemy(pygame.sprite.Sprite):
-    def __init__(self, size, pos):
+class Enemies(pygame.sprite.Sprite):
+    def __init__(self, image, size, pos):
         super().__init__()
 
-        self.normal_image_unscaled = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Enemy", "enemy2.png")).convert_alpha()
+        self.normal_image_unscaled = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Enemy", image)).convert_alpha()
         #self.shoot_image_unscaled = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Enemy", "enemy2.png")).convert_alpha()
         self.normal_image = pygame.transform.scale(self.normal_image_unscaled, (size))
 
@@ -115,7 +95,6 @@ class Bullet(pygame.sprite.Sprite):
         self.image = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Iron Man", "bullet.png")).convert_alpha()
         self.image = pygame.transform.scale(self.image, (60, 40))
         self.rect = self.image.get_rect(center=pos)
-
 
     def update(self):
         self.rect.x += 5
@@ -212,13 +191,11 @@ class Game():
             elif event.type == pygame.KEYDOWN:          
                 if event.key == pygame.K_ESCAPE:  
                     self.running = False
-
-                elif event.key == pygame.K_SPACE and time_now - self.iron_man.sprite.last_shot > self.iron_man.sprite.cooldown:
-                    hand_pos = self.iron_man.sprite.get_hand_position()
+                elif event.key == pygame.K_SPACE:
                     self.iron_man.sprite.is_shooting = True
-                    bullet = Bullet(hand_pos)
-                    self.bullets.add(bullet)
-                    self.iron_man.sprite.last_shot = time_now
+                    #bullet = Bullet(hand_pos)
+                    #self.bullets.add(bullet)
+                    #self.iron_man.sprite.last_shot = time_now
 
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_SPACE:
@@ -238,8 +215,6 @@ class Game():
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 self.show_title = False
     
-    
-
     def update(self):
         self.iron_man.update()
         self.bullets.update()
