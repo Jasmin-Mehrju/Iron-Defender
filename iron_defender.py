@@ -209,7 +209,7 @@ class Game():
         font = pygame.font.SysFont("Comic Sans MS", 60, bold=True)
         text = font.render("Press SPACE to start", True, (255, 255, 255))
         text_rect = text.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() - 100))
-        font2 = pygame.font.Font(None, 50)
+        font2 = pygame.font.SysFont("DotumChe", 40)
         text2 = font2.render(
             "Controls:\n"
             "w: up\n"
@@ -220,8 +220,6 @@ class Game():
             "white",
             None
         )
-
-        #text_rect = text.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() - 50))
 
         self.screen.blit(text, text_rect)
         self.screen.blit(text2)
