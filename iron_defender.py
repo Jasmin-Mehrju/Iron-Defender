@@ -65,18 +65,29 @@ class Iron_Man(pygame.sprite.Sprite):
         #self.move()
 
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self, image, size, pos):
+    def __init__(self, size, pos, screen):
         super().__init__()
 
-        self.normal_image_unscaled = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Enemy", image)).convert_alpha()
-        #self.shoot_image_unscaled = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Enemy", "enemy2.png")).convert_alpha()
+        self.normal_image_unscaled = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Enemy", "enemy1.png")).convert_alpha()
+        self.shoot_image_unscaled = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Enemy", "enemy2.png")).convert_alpha()
         self.normal_image = pygame.transform.scale(self.normal_image_unscaled, (size))
 
         self.image = self.normal_image
         self.rect = self.image.get_rect()
         self.pos = pygame.math.Vector2(pos)
+        self.screen = screen
+        self.is_shooting = False
+        self.last_shot = pygame.time.get_ticks()
+
+    def get_hand_position(self):
+        hand_x = self.rect.right - 5
+        hand_y = self.rect.top + 55
+        return hand_x, hand_y
 
     def move(self):
+        # self.pos.x += self.direction.x * self.speed * Settings.DELTATIME
+        # self.pos.y += self.direction.y * self.speed * Settings.DELTATIME
+
         if self.pos.x < 0:
             self.pos.x = 0
         elif self.pos.x + self.rect.width > self.screen.get_width():
@@ -88,6 +99,15 @@ class Enemy(pygame.sprite.Sprite):
             self.pos.y = self.screen.get_height() - self.rect.height
             
         self.rect.topleft = self.pos
+
+    def update(self):
+        self.cooldown = 500
+        if self.is_shooting:
+            self.image = self.shoot_image_unscaled
+            self.rect = self.image.get_rect(topleft=self.pos)
+        else:
+            self.image = self.normal_image
+            self.rect = self.image.get_rect(topleft=self.pos)
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, pos):
@@ -220,9 +240,10 @@ class Game():
             "white",
             None
         )
+        text2_rect = text2.get_rect(topleft=(self.screen.get_width() - 1515, self.screen.get_height() - 850))
 
         self.screen.blit(text, text_rect)
-        self.screen.blit(text2)
+        self.screen.blit(text2, text2_rect)
         pygame.display.flip()
 
         for event in pygame.event.get():
