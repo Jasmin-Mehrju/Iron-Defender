@@ -65,7 +65,7 @@ class Iron_Man(pygame.sprite.Sprite):
         #self.move()
 
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self, size, pos, screen):
+    def __init__(self, size, screen):
         super().__init__()
 
         self.normal_image_unscaled = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Enemy", "enemy1.png")).convert_alpha()
@@ -74,7 +74,7 @@ class Enemy(pygame.sprite.Sprite):
 
         self.image = self.normal_image
         self.rect = self.image.get_rect()
-        self.pos = pygame.math.Vector2(pos)
+        self.rect.right = screen.get_width()
         self.screen = screen
         self.is_shooting = False
         self.last_shot = pygame.time.get_ticks()
@@ -132,6 +132,7 @@ class Game():
 
         self.iron_man = pygame.sprite.GroupSingle(Iron_Man((150, 240),(Settings.start_pos), self.screen))
         self.enemies = pygame.sprite.Group()
+        self.spawn_enemy()
         self.bullets = pygame.sprite.Group()
 
         self.background_image = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "background.png")).convert()
@@ -149,6 +150,12 @@ class Game():
         self.heart_image = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Iron Man", "leben.png")).convert_alpha()
         self.heart_image = pygame.transform.scale(self.heart_image, (50, 50))
         self.font = pygame.font.Font(None, 36)
+    
+    def spawn_enemy(self):
+        enemy_size = (150, 240)
+        enemy = Enemy(enemy_size, self.screen)
+        enemy.rect.y = 100
+        self.enemies.add(enemy)
 
     def handle_hit(self):
         if self.lives > 0:
