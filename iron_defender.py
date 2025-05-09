@@ -233,10 +233,14 @@ class Game():
 
     def show_title_screen(self):
         self.screen.blit(self.title_screen, (0,0))
+        #Quelle für Fonts benutzt:
+        #https://medium.com/@amit25173/pygame-fonts-guide-for-beginners-e2ec8bf7671c
         font = pygame.font.SysFont("Comic Sans MS", 60, bold=True)
         text = font.render("Press SPACE to start", True, (255, 255, 255))
         text_rect = text.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() - 100))
         font2 = pygame.font.SysFont("DotumChe", 40)
+        #Quelle für schreiben in mehrere Zeilen benutzt:
+        #https://stackoverflow.com/questions/42014195/rendering-text-with-multiple-lines-in-pygame/42015712#42015712
         text2 = font2.render(
             "Controls:\n"
             "w: up\n"
