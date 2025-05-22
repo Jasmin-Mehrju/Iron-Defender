@@ -132,7 +132,7 @@ class Game():
 
         self.iron_man = pygame.sprite.GroupSingle(Iron_Man((150, 240),(Settings.start_pos), self.screen))
         self.enemies = pygame.sprite.Group()
-        self.spawn_enemy()
+        self.spawn_enemies()
         self.bullets = pygame.sprite.Group()
 
         self.background_image = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "background.png")).convert()
@@ -151,11 +151,14 @@ class Game():
         self.heart_image = pygame.transform.scale(self.heart_image, (50, 50))
         self.font = pygame.font.Font(None, 36)
     
-    def spawn_enemy(self):
+    def spawn_enemies(self, count=5):
         enemy_size = (150, 240)
-        enemy = Enemy(enemy_size, self.screen)
-        enemy.rect.y = 100
-        self.enemies.add(enemy)
+        screen_width = self.screen.get_width()
+        for i in range(count):
+            enemy = Enemy(enemy_size, self.screen)
+            enemy.rect.x = screen_width - enemy.rect.width
+            enemy.rect.y = 50 + i * (enemy.rect.height + 20)
+            self.enemies.add(enemy)
 
     def handle_hit(self):
         if self.lives > 0:
@@ -166,6 +169,9 @@ class Game():
     def check_collisions(self):
         #bullet und enemy
         hits = pygame.sprite.groupcollide(self.bullets, self.enemies, True, True)
+        # if hits:
+        #     for enemy in hits:
+        #         self.spawn_enemies()
 
         #iron man trifft enemy
         if pygame.sprite.spritecollideany(self.iron_man.sprite, self.enemies):
