@@ -100,14 +100,14 @@ class Enemy(pygame.sprite.Sprite):
             
         self.rect.topleft = self.pos
 
-    def update(self):
-        self.cooldown = 500
-        if self.is_shooting:
-            self.image = self.shoot_image_unscaled
-            self.rect = self.image.get_rect(topleft=self.pos)
-        else:
-            self.image = self.normal_image
-            self.rect = self.image.get_rect(topleft=self.pos)
+    # def update(self):
+    #     self.cooldown = 500
+    #     if self.is_shooting:
+    #         self.image = self.shoot_image_unscaled
+    #         self.rect = self.image.get_rect(topleft=self.pos)
+    #     else:
+    #         self.image = self.normal_image
+    #         self.rect = self.image.get_rect(topleft=self.pos)
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, pos):
@@ -118,8 +118,8 @@ class Bullet(pygame.sprite.Sprite):
 
     def update(self):
         self.rect.x += 8
-        if self.rect.left > Settings.WINDOW.width:
-            self.kill()
+        # if self.rect.right > Settings.WINDOW.width:
+        #     self.kill()
   
 
 class Game():
@@ -162,6 +162,14 @@ class Game():
             self.lives -= 1
             if self.lives == 0:
                 self.show_title_screen()
+
+    def check_collisions(self):
+        #bullet und enemy
+        hits = pygame.sprite.groupcollide(self.bullets, self.enemies, True, True)
+
+        #iron man trifft enemy
+        if pygame.sprite.spritecollideany(self.iron_man.sprite, self.enemies):
+            self.handle_hit()
 
     def run(self):
         while self.running:
@@ -266,6 +274,8 @@ class Game():
     def update(self):
         self.iron_man.update()
         self.bullets.update()
+        self.enemies.update()
+        self.check_collisions()
 
 
 def main():
