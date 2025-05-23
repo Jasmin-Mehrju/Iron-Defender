@@ -151,8 +151,8 @@ class Game():
         self.heart_image = pygame.transform.scale(self.heart_image, (50, 50))
         self.font = pygame.font.Font(None, 36)
     
-    def spawn_enemies(self, count=5):
-        enemy_size = (150, 240)
+    def spawn_enemies(self, count=4):
+        enemy_size = (120, 180)
         screen_width = self.screen.get_width()
         for i in range(count):
             enemy = Enemy(enemy_size, self.screen)
@@ -193,11 +193,13 @@ class Game():
         self.iron_man.draw(self.screen)
         self.enemies.draw(self.screen)
         self.bullets.draw(self.screen)
+        #transparente bar oben
         bar_height = 65
         screen_width = self.screen.get_width()
         transparent_bar = pygame.Surface((screen_width, bar_height), pygame.SRCALPHA)
         pygame.draw.rect(transparent_bar, (102, 102, 102, 102), transparent_bar.get_rect())
         self.screen.blit(transparent_bar, (0, 0))
+        #lebensanzeige
         icon_spacing = 10
         start_x = self.screen.get_width() - 10
         heart_rect = self.heart_image.get_rect(topright=(start_x, 10))
