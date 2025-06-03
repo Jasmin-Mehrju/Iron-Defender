@@ -124,9 +124,13 @@ class Bullet(pygame.sprite.Sprite):
 
 class Game():
     def __init__(self):
-        os.environ["SDL_VIDEO_WINDOW_POS"] = "10, 50"
+        #Quelle für Bildschirmanzeige:
+        #https://www.youtube.com/watch?v=GX_fsDz4j8A 
+        os.environ["SDL_VIDEO_CENTERED"] = "1"
         pygame.init()
-        self.screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
+        info = pygame.display.Info()
+        screen_width, screen_height = info.current_w, info.current_h
+        self.screen = pygame.display.set_mode((screen_width - 10, screen_height - 50), pygame.RESIZABLE)
         pygame.display.set_caption("Iron Defender")
         self.clock = pygame.time.Clock()
 
@@ -137,9 +141,6 @@ class Game():
 
         self.background_image = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "background.png")).convert()
         self.background_image = pygame.transform.scale(self.background_image, self.screen.get_size())
-
-        self.title_screen = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Hintergrund", "splash_screen.jpg")).convert()
-        self.title_screen = pygame.transform.scale(self.title_screen, self.screen.get_size())
 
         mixer.music.load("jarvis.mp3")
         mixer.music.play()
@@ -248,6 +249,8 @@ class Game():
                     self.iron_man.sprite.is_shooting = False
 
     def show_title_screen(self):
+        self.title_screen = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Hintergrund", "splash_screen.jpg")).convert()
+        self.title_screen = pygame.transform.scale(self.title_screen, self.screen.get_size())
         self.screen.blit(self.title_screen, (0,0))
         #Quelle für Fonts benutzt:
         #https://medium.com/@amit25173/pygame-fonts-guide-for-beginners-e2ec8bf7671c
@@ -267,12 +270,42 @@ class Game():
             "white",
             None
         )
-        text2_rect = text2.get_rect(topleft=(self.screen.get_width() - 1515, self.screen.get_height() - 850))
+        text2_rect = text2.get_rect(topleft=(10, 10))
 
         self.screen.blit(text, text_rect)
         self.screen.blit(text2, text2_rect)
         pygame.display.flip()
 
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                self.show_title = False
+
+    def show_instruction_screen(self):
+        self.screen.fill("black")
+        
+        font = pygame.font.SysFont("Arial", 60, bold=True)
+        text = font.render("How to play", True, (255, 255, 255))
+        text_rect = text.get_rect(center=(self.screen.get_width() // 2, 100))
+        self.screen.blit(text, text_rect)
+
+        font2 = pygame.font.SysFont("Comic Sans MS", 60, bold=True)
+        text2 = font2.render(
+            "Move up with w \n"
+            "Move down with s \n"
+            "Move left with a \n"
+            "Move right with d \n",
+            True,
+            "white",
+            None
+        )
+
+        text2_rect = text2.get_rect(center=(10, 10))
+        self.screen.blit(text, text_rect)
+        self.screen.blit(text2, text2_rect)
+        pygame.display.flip()
+    
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
