@@ -147,6 +147,8 @@ class Game():
 
         self.running = True
         self.show_title = True
+        self.show_instruction = False
+
         self.lives = 3
         self.heart_image = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Iron Man", "leben.png")).convert_alpha()
         self.heart_image = pygame.transform.scale(self.heart_image, (50, 50))
@@ -182,6 +184,8 @@ class Game():
         while self.running:
             if self.show_title:
                 self.show_title_screen()
+            elif self.show_instruction:
+                self.show_instruction_screen()
             else:
                 self.watch_for_events()
                 self.update()
@@ -281,36 +285,52 @@ class Game():
                 self.running = False
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 self.show_title = False
+                self.show_instruction = True
 
     def show_instruction_screen(self):
         self.screen.fill("black")
         
         font = pygame.font.SysFont("Arial", 60, bold=True)
         text = font.render("How to play", True, (255, 255, 255))
-        text_rect = text.get_rect(center=(self.screen.get_width() // 2, 100))
-        self.screen.blit(text, text_rect)
+        text_rect = text.get_rect(center=(self.screen.get_width() // 2, 50))
 
-        font2 = pygame.font.SysFont("Comic Sans MS", 60, bold=True)
+        font2 = pygame.font.SysFont("Comic Sans MS", 25)
         text2 = font2.render(
-            "Move up with w \n"
-            "Move down with s \n"
-            "Move left with a \n"
-            "Move right with d \n",
+            "You're Iron Man and need to protect the city from the enemies. \n"
+            "The other Avengers are not here so it's on you alone to rescue \n"
+            "the people from the threat. Shoot them and be the hero! \n",
+            True,
+            "white",
+            None
+        )
+        
+        text2_rect = text2.get_rect(center=(400, 250))
+
+        font3 = pygame.font.SysFont("Comic Sans MS", 25)
+        text3 = font3.render(
+            "Move up with 'w' \n"
+            "Move left with 'a' \n"
+            "Move down with 's' \n"
+            "Move right with 'd' \n",
             True,
             "white",
             None
         )
 
-        text2_rect = text2.get_rect(center=(10, 10))
+        text3_rect = text3.get_rect(center=(1150, 270))
+
+
+
         self.screen.blit(text, text_rect)
         self.screen.blit(text2, text2_rect)
+        self.screen.blit(text3, text3_rect)
         pygame.display.flip()
     
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                self.show_title = False
+                self.show_instruction = False
     
     def update(self):
         self.iron_man.update()
