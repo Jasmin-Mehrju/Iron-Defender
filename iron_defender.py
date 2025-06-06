@@ -289,6 +289,8 @@ class Game():
 
     def show_instruction_screen(self):
         self.screen.fill("black")
+        image = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "instruction.png")).convert()
+        pos = (10, 500)
         
         font = pygame.font.SysFont("Arial", 60, bold=True)
         text = font.render("How to play", True, (255, 255, 255))
@@ -298,7 +300,7 @@ class Game():
         text2 = font2.render(
             "You're Iron Man and need to protect the city from the enemies. \n"
             "The other Avengers are not here so it's on you alone to rescue \n"
-            "the people from the threat. Shoot them and be the hero! \n",
+            "the people from the threat. Shoot them and be the hero! ",
             True,
             "white",
             None
@@ -311,7 +313,8 @@ class Game():
             "Move up with 'w' \n"
             "Move left with 'a' \n"
             "Move down with 's' \n"
-            "Move right with 'd' \n",
+            "Move right with 'd' \n"
+            "Shoot with 'Space' ",
             True,
             "white",
             None
@@ -319,11 +322,10 @@ class Game():
 
         text3_rect = text3.get_rect(center=(1150, 270))
 
-
-
         self.screen.blit(text, text_rect)
         self.screen.blit(text2, text2_rect)
         self.screen.blit(text3, text3_rect)
+        self.screen.blit(image, pos)
         pygame.display.flip()
     
         for event in pygame.event.get():
