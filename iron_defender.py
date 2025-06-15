@@ -85,6 +85,8 @@ class Enemy(pygame.sprite.Sprite):
         self.health -= 1
         if self.health <= 0:
             self.kill()
+            return True
+        return False
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, pos, direction=1, is_enemy = False):
@@ -109,6 +111,7 @@ class Game():
         self.screen = pygame.display.set_mode((screen_width - 10, screen_height - 50), pygame.RESIZABLE)
         pygame.display.set_caption("Iron Defender")
         self.clock = pygame.time.Clock()
+        self.score = 0
 
         self.iron_man = pygame.sprite.GroupSingle(Iron_Man((150, 240),(Settings.start_pos), self.screen))
 
@@ -133,11 +136,12 @@ class Game():
     
     def spawn_enemies(self, count=4):
         enemy_size = (120, 180)
-        for i in range(count):
-            enemy = Enemy(enemy_size, self.screen, self.bullets)
-            enemy.rect.x = self.screen.get_width() - enemy.rect.width
-            enemy.rect.y = 50 + i * (enemy.rect.height + 20)
-            self.enemies.add(enemy)
+        for row in range(5):
+            for col in range(4):
+                enemy = Enemy(enemy_size, self.screen)
+                enemy.rect.x = self.screen.get_width() - enemy.rect.width - col * (enemy.rect.width + 20)
+                enemy.rect.y = 50 + row * (enemy.rect.height + 20)
+                self.enemies.add(enemy)
 
     def handle_hit(self):
         if self.lives > 0:
@@ -150,7 +154,9 @@ class Game():
         hits = pygame.sprite.groupcollide(self.bullets, self.enemies, True, False)
         for bullet, enemies_hit in hits.items():
             for enemy in enemies_hit:
-                enemy.got_hit()
+                enemy_killed = enemy.got_hit()
+                if enemy_killed:
+                    self.score += 1
         #iron man trifft enemy
         if pygame.sprite.spritecollideany(self.iron_man.sprite, self.enemies):
             self.handle_hit()
@@ -187,6 +193,9 @@ class Game():
         for i in range(self.lives):
             self.screen.blit(self.heart_image, (current_x, heart_rect.top))
             current_x -= (heart_rect.width + icon_spacing)
+        #punktestand
+        score_text = self.font.render("Score: " + str(self.score), True, (255, 255, 255))
+        self.screen.blit(score_text, (10, 10))
         pygame.display.flip()
 
     def watch_for_events(self):
