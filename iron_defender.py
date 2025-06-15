@@ -32,6 +32,7 @@ class Iron_Man(pygame.sprite.Sprite):
         self.screen = screen
         self.is_shooting = False
         self.last_shot = pygame.time.get_ticks()
+        self.cooldown = 500
 
     def get_hand_position(self):
         hand_x = self.rect.right - 5
@@ -39,88 +40,63 @@ class Iron_Man(pygame.sprite.Sprite):
         return hand_x, hand_y
 
     def move(self):
+        #Iron Man Bewegung
         self.pos.x += self.direction.x * self.speed * Settings.DELTATIME
         self.pos.y += self.direction.y * self.speed * Settings.DELTATIME
-
+        #Begrenzung links
         if self.pos.x < 0:
             self.pos.x = 0
-        elif self.pos.x + self.rect.width > self.screen.get_width():
-            self.pos.x = self.screen.get_width() - self.rect.width
-
+        #Begrenzung rechts nur bis zum viertel
+        max_x = self.screen.get_width() // 4 - self.rect.width
+        if self.pos.x > max_x:
+            self.pos.x = max_x
+        #begrenzung oben
         if self.pos.y < 0:
             self.pos.y = 0
-        elif self.pos.y + self.rect.height > self.screen.get_height():
+        #begrenzung unten
+        if self.pos.y + self.rect.height > self.screen.get_height():
             self.pos.y = self.screen.get_height() - self.rect.height
             
         self.rect.topleft = self.pos
 
     def update(self):
-        self.cooldown = 500
         if self.is_shooting:
             self.image = self.shoot_image_unscaled
             self.rect = self.image.get_rect(topleft=self.pos)
         else:
             self.image = self.normal_image
             self.rect = self.image.get_rect(topleft=self.pos)
-        #self.move()
 
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, size, screen):
         super().__init__()
 
-        self.normal_image_unscaled = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Enemy", "enemy1.png")).convert_alpha()
-        self.shoot_image_unscaled = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Enemy", "enemy2.png")).convert_alpha()
-        self.normal_image = pygame.transform.scale(self.normal_image_unscaled, (size))
+        self.image = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Enemy", "enemy1.png")).convert_alpha()
+        self.image = pygame.transform.scale(self.image, size)
 
-        self.image = self.normal_image
+        self.image = self.image
         self.rect = self.image.get_rect()
         self.rect.right = screen.get_width()
         self.screen = screen
-        self.is_shooting = False
-        self.last_shot = pygame.time.get_ticks()
+        self.pos = pygame.math.Vector2(self.rect.topleft)
+        self.health = 1
 
-    def get_hand_position(self):
-        hand_x = self.rect.right - 5
-        hand_y = self.rect.top + 55
-        return hand_x, hand_y
-
-    def move(self):
-        # self.pos.x += self.direction.x * self.speed * Settings.DELTATIME
-        # self.pos.y += self.direction.y * self.speed * Settings.DELTATIME
-
-        if self.pos.x < 0:
-            self.pos.x = 0
-        elif self.pos.x + self.rect.width > self.screen.get_width():
-            self.pos.x = self.screen.get_width() - self.rect.width
-
-        if self.pos.y < 0:
-            self.pos.y = 0
-        elif self.pos.y + self.rect.height > self.screen.get_height():
-            self.pos.y = self.screen.get_height() - self.rect.height
-            
-        self.rect.topleft = self.pos
-
-    # def update(self):
-    #     self.cooldown = 500
-    #     if self.is_shooting:
-    #         self.image = self.shoot_image_unscaled
-    #         self.rect = self.image.get_rect(topleft=self.pos)
-    #     else:
-    #         self.image = self.normal_image
-    #         self.rect = self.image.get_rect(topleft=self.pos)
+    def got_hit(self):
+        self.health -= 1
+        if self.health <= 0:
+            self.kill()
 
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, pos):
+    def __init__(self, pos, direction=1, is_enemy = False):
         super().__init__()
         self.image = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Iron Man", "bullet.png")).convert_alpha()
         self.image = pygame.transform.scale(self.image, (60, 40))
         self.rect = self.image.get_rect(midleft=pos)
+        self.direction = direction
+        self.is_enemy = is_enemy
 
     def update(self):
-        self.rect.x += 8
-        # if self.rect.right > Settings.WINDOW.width:
-        #     self.kill()
-  
+        self.rect.x += 8 * self.direction
 
 class Game():
     def __init__(self):
@@ -135,9 +111,10 @@ class Game():
         self.clock = pygame.time.Clock()
 
         self.iron_man = pygame.sprite.GroupSingle(Iron_Man((150, 240),(Settings.start_pos), self.screen))
+
+        self.bullets = pygame.sprite.Group()
         self.enemies = pygame.sprite.Group()
         self.spawn_enemies()
-        self.bullets = pygame.sprite.Group()
 
         self.background_image = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "background.png")).convert()
         self.background_image = pygame.transform.scale(self.background_image, self.screen.get_size())
@@ -156,10 +133,9 @@ class Game():
     
     def spawn_enemies(self, count=4):
         enemy_size = (120, 180)
-        screen_width = self.screen.get_width()
         for i in range(count):
-            enemy = Enemy(enemy_size, self.screen)
-            enemy.rect.x = screen_width - enemy.rect.width
+            enemy = Enemy(enemy_size, self.screen, self.bullets)
+            enemy.rect.x = self.screen.get_width() - enemy.rect.width
             enemy.rect.y = 50 + i * (enemy.rect.height + 20)
             self.enemies.add(enemy)
 
@@ -171,11 +147,10 @@ class Game():
 
     def check_collisions(self):
         #bullet und enemy
-        hits = pygame.sprite.groupcollide(self.bullets, self.enemies, True, True)
-        # if hits:
-        #     for enemy in hits:
-        #         self.spawn_enemies()
-
+        hits = pygame.sprite.groupcollide(self.bullets, self.enemies, True, False)
+        for bullet, enemies_hit in hits.items():
+            for enemy in enemies_hit:
+                enemy.got_hit()
         #iron man trifft enemy
         if pygame.sprite.spritecollideany(self.iron_man.sprite, self.enemies):
             self.handle_hit()
