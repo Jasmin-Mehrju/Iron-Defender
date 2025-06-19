@@ -1,5 +1,6 @@
 import os
 import pygame
+import random
 from pygame import mixer
 
 class Settings():
@@ -31,6 +32,7 @@ class Iron_Man(pygame.sprite.Sprite):
         self.speed = 250
         self.screen = screen
         self.is_shooting = False
+        self.health = 3
         self.last_shot = pygame.time.get_ticks()
         self.cooldown = 500
 
@@ -88,10 +90,14 @@ class Enemy(pygame.sprite.Sprite):
             return True
         return False
 
+
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, pos, direction=1, is_enemy = False):
         super().__init__()
-        self.image = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Iron Man", "bullet.png")).convert_alpha()
+        if is_enemy:
+            self.image = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Enemy", "ebullet.png")).convert_alpha()
+        else:
+            self.image = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Iron Man", "bullet.png")).convert_alpha()
         self.image = pygame.transform.scale(self.image, (60, 40))
         self.rect = self.image.get_rect(midleft=pos)
         self.direction = direction
@@ -157,9 +163,17 @@ class Game():
                 enemy_killed = enemy.got_hit()
                 if enemy_killed:
                     self.score += 1
+
         #iron man trifft enemy
         if pygame.sprite.spritecollideany(self.iron_man.sprite, self.enemies):
             self.handle_hit()
+
+        #enemy trifft iron man
+        for bullet in self.bullets:
+            if bullet.is_enemy and bullet.rect.colliderect(self.iron_man.sprite.rect):
+                bullet.kill()
+                self.handle_hit()
+
 
     def run(self):
         while self.running:
@@ -245,23 +259,8 @@ class Game():
         font = pygame.font.SysFont("Comic Sans MS", 60, bold=True)
         text = font.render("Press SPACE to start", True, (255, 255, 255))
         text_rect = text.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() - 100))
-        font2 = pygame.font.SysFont("DotumChe", 40)
-        #Quelle für schreiben in mehrere Zeilen benutzt:
-        #https://stackoverflow.com/questions/42014195/rendering-text-with-multiple-lines-in-pygame/42015712#42015712
-        text2 = font2.render(
-            "Controls:\n"
-            "w: up\n"
-            "a: left\n"
-            "s: down\n" 
-            "d: right\n",
-            True,
-            "white",
-            None
-        )
-        text2_rect = text2.get_rect(topleft=(10, 10))
 
         self.screen.blit(text, text_rect)
-        self.screen.blit(text2, text2_rect)
         pygame.display.flip()
 
         for event in pygame.event.get():
@@ -279,7 +278,8 @@ class Game():
         font = pygame.font.SysFont("Arial", 60, bold=True)
         text = font.render("How to play", True, (255, 255, 255))
         text_rect = text.get_rect(center=(self.screen.get_width() // 2, 50))
-
+        #Quelle für schreiben in mehrere Zeilen benutzt:
+        #https://stackoverflow.com/questions/42014195/rendering-text-with-multiple-lines-in-pygame/42015712#42015712
         font2 = pygame.font.SysFont("Comic Sans MS", 25)
         text2 = font2.render(
             "You're Iron Man and need to protect the city from the enemies. \n"
