@@ -140,7 +140,7 @@ class Game():
         self.heart_image = pygame.transform.scale(self.heart_image, (50, 50))
         self.font = pygame.font.Font(None, 36)
     
-    def spawn_enemies(self, count=4):
+    def spawn_enemies(self):
         enemy_size = (120, 180)
         for row in range(5):
             for col in range(4):
