@@ -14,6 +14,7 @@ class Settings():
     TITLE = "Iron Defender"
     FILE_PATH = os.path.dirname(os.path.abspath(__file__))
     IMAGE_PATH = os.path.join(FILE_PATH, "images")
+    SOUND_PATH = os.path.join(FILE_PATH, "sounds")
     start_pos = pygame.math.Vector2(0, WINDOW.height // 2)
 
 
@@ -128,8 +129,14 @@ class Game():
         self.background_image = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "background.png")).convert()
         self.background_image = pygame.transform.scale(self.background_image, self.screen.get_size())
 
-        mixer.music.load("jarvis.mp3")
+        #Anfangsbegrüßung
+        mixer.music.load(os.path.join(Settings.SOUND_PATH, "jarvis.mp3"))
+        mixer.music.set_volume(0.3)
         mixer.music.play()
+
+        #Sound beim Schießen
+        self.shoot_sound = mixer.Sound(os.path.join(Settings.SOUND_PATH, "ironman_blaster.mp3"))
+        self.shoot_sound.set_volume(0.3)
 
         self.running = True
         self.show_title = True
@@ -142,11 +149,11 @@ class Game():
     
     def spawn_enemies(self):
         enemy_size = (120, 180)
-        for row in range(5):
+        for row in range(4):
             for col in range(4):
                 enemy = Enemy(enemy_size, self.screen)
-                enemy.rect.x = self.screen.get_width() - enemy.rect.width - col * (enemy.rect.width + 20)
-                enemy.rect.y = 50 + row * (enemy.rect.height + 20)
+                enemy.rect.x = self.screen.get_width() - enemy.rect.width - col * (enemy.rect.width + 30)
+                enemy.rect.y = 80 + row * (enemy.rect.height + 30)
                 self.enemies.add(enemy)
 
     def handle_hit(self):
@@ -244,6 +251,7 @@ class Game():
                     hand_pos = self.iron_man.sprite.get_hand_position()
                     bullet = Bullet(hand_pos)
                     self.bullets.add(bullet)
+                    self.shoot_sound.play()
                     self.iron_man.sprite.last_shot = time_now
 
             elif event.type == pygame.KEYUP:
@@ -318,11 +326,33 @@ class Game():
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 self.show_instruction = False
     
+    def show_end_screen(self):
+        font = pygame.font.SysFont("Comic Sans MS", 72)
+        end_text = font.render("You defeated every enemy and saved the city!", True, (255, 255, 255))
+        sub_text = self.font.render("Press ESC to close the game", True, (200, 200, 200))
+        while True:
+            self.screen.fill((0, 0, 0))
+            self.screen.blit(end_text, end_text.get_rect(center=self.screen.get_rect().center))
+            self.screen.blit(sub_text, sub_text.get_rect(center=(self.screen.get_rect().centerx, self.screen.get_rect().centery + 100)))
+            pygame.display.flip()
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    exit()
+
+    
     def update(self):
         self.iron_man.update()
         self.bullets.update()
         self.enemies.update()
         self.check_collisions()
+        if not self.enemies:
+            self.show_end_screen()
+
 
 
 def main():
