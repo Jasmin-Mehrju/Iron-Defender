@@ -125,7 +125,7 @@ class Game():
         self.enemies = pygame.sprite.Group()
         self.spawn_enemies()
 
-        self.background_image = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "background.png")).convert()
+        self.background_image = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Hintergrund", "hintergrund.png")).convert()
         self.background_image = pygame.transform.scale(self.background_image, self.screen.get_size())
 
         #Anfangsbegrüßung
@@ -263,11 +263,16 @@ class Game():
         self.screen.blit(self.title_screen, (0,0))
         #Quelle für Fonts benutzt:
         #https://medium.com/@amit25173/pygame-fonts-guide-for-beginners-e2ec8bf7671c
-        font = pygame.font.SysFont("Comic Sans MS", 60, bold=True)
+        font = pygame.font.SysFont("Aharoni", 60, bold=True)
         text = font.render("Press SPACE to start", True, (255, 255, 255))
         text_rect = text.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() - 100))
 
+        font2 = pygame.font.SysFont("Aharoni", 120, bold=True)
+        text2 = font2.render("Iron Defender", True, (255, 255, 255))
+        text2_rect = text2.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() // 3))
+
         self.screen.blit(text, text_rect)
+        self.screen.blit(text2, text2_rect)
         pygame.display.flip()
 
         for event in pygame.event.get():
@@ -327,16 +332,24 @@ class Game():
     
     def show_end_screen(self):
         #Hintergrundmusik
-        mixer.music.load(os.path.join(Settings.SOUND_PATH, "The Avengers"))
-        mixer.music.set_volume(0.3)
+        mixer.music.load(os.path.join(Settings.SOUND_PATH, "The Avengers.mp3"))
+        mixer.music.set_volume(0.1)
         mixer.music.play(-1)
-        font = pygame.font.SysFont("Comic Sans MS", 72)
-        end_text = font.render("You defeated every enemy and saved the city!", True, (255, 255, 255))
-        sub_text = self.font.render("Press ESC to close the game", True, (200, 200, 200))
+        
+        font = pygame.font.SysFont("Aharoni", 80)
+        text = font.render("You defeated every enemy and saved the city!", True, (255, 255, 255))
+        text_rect = text.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() // 2 + 20))
+
+        font2 = pygame.font.SysFont("Aharoni", 50)
+        text2 = font2.render("Press ESC to close the game", True, (200, 200, 200))
+        text2_rect = text2.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() // 2 + 100))
+
         while True:
-            self.screen.fill((0, 0, 0))
-            self.screen.blit(end_text, end_text.get_rect(center=self.screen.get_rect().center))
-            self.screen.blit(sub_text, sub_text.get_rect(center=(self.screen.get_rect().centerx, self.screen.get_rect().centery + 100)))
+            self.end_screen = pygame.image.load(os.path.join(Settings.IMAGE_PATH, "Hintergrund", "iron_man.jpg")).convert()
+            self.end_screen = pygame.transform.scale(self.end_screen, self.screen.get_size())
+            self.screen.blit(self.end_screen, (0,0))
+            self.screen.blit(text, text_rect)
+            self.screen.blit(text2, text2_rect)
             pygame.display.flip()
 
             for event in pygame.event.get():
