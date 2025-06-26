@@ -1,6 +1,5 @@
 import os
 import pygame
-import random
 from pygame import mixer
 
 class Settings():
@@ -327,6 +326,10 @@ class Game():
                 self.show_instruction = False
     
     def show_end_screen(self):
+        #Hintergrundmusik
+        mixer.music.load(os.path.join(Settings.SOUND_PATH, "The Avengers"))
+        mixer.music.set_volume(0.3)
+        mixer.music.play(-1)
         font = pygame.font.SysFont("Comic Sans MS", 72)
         end_text = font.render("You defeated every enemy and saved the city!", True, (255, 255, 255))
         sub_text = self.font.render("Press ESC to close the game", True, (200, 200, 200))
